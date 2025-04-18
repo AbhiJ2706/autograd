@@ -142,3 +142,14 @@ class MatrixMultiplication(BaseOperation):
     def info(self, verbose=False):
         return f"Exponent ({self._join_args(verbose=verbose)})"
     
+
+class NaturalLogarithm(BaseOperation):
+    def _forward(self):
+        return np.log(self._get_arg(0))
+    
+    def _backward(self, i):
+        return 1 / self._get_arg(0)
+    
+    def info(self, verbose=False):
+        return f"Ln ({self._join_args(verbose=verbose)})"
+    

@@ -10,6 +10,7 @@ if __name__ == "__main__":
     print((x + y).info())
     (x + y).backward()
     print(x.grad, y.grad)
+    print(x.shape)
 
     print("-------------")
 
@@ -131,4 +132,25 @@ if __name__ == "__main__":
     y = F.relu(x)
     y.backward()
     print(y.info())
+    print(x.grad)
+    print(x.shape)
+    print(F.relu(4))
+
+    print("-------------")
+
+    x = Tensor([[1, 2, 3], [4, 5, 6]])
+    y = Tensor([[7, 8, 9], [10, 11, 12]])
+    print(F.mean_squared_error(x, y))
+    z = F.mean_squared_error(x, y)
+    z.backward()
+    print(z.info(verbose=True))
+    print(x.grad, y.grad)
+
+    print("-------------")
+
+    x = Tensor([1, 2, 3, 4, 5])
+    print(F.softmax(x))
+    z = F.softmax(x)
+    z.backward()
+    print(z.info())
     print(x.grad)

@@ -6,7 +6,17 @@ import autograd.operation as operation
 
 
 class Tensor:
-    def __init__(self, val: np.ndarray | float | int | list, creator: 'operation.BaseOperation' = None):
+    class Backlink:
+        def __init__(self, indexer: int | slice, referee: Tensor):
+            self.indexer = indexer
+            self.referee = referee
+
+        def send(self, grad: np.ndarray):
+            referee_grad = np.zeros_like(self.referee.val, dtype=float)
+            referee_grad[self.indexer] = grad[self.indexer]
+            self.referee.backward(referee_grad)
+
+    def __init__(self, val: np.ndarray | float | int | list, creator: operation.BaseOperation = None, backlink: Tensor.Backlink = None):
         if isinstance(val, np.ndarray):
             self.val: np.ndarray = val
         elif isinstance(val, list):
@@ -15,6 +25,7 @@ class Tensor:
             self.val: np.ndarray = np.array([val])
         self.creator: operation.BaseOperation = creator
         self.grad: np.ndarray | None = None
+        self.backlink: Tensor.Backlink = backlink
     
     def zero_grad(self) -> None:
         self.grad = None
@@ -28,6 +39,8 @@ class Tensor:
             self.grad = current_gradient
         else:
             self.grad += current_gradient
+        if self.backlink:
+            self.backlink.send(self.grad)
         if self.creator:
             self.creator.backward(current_gradient)
     
@@ -148,3 +161,6 @@ class Tensor:
         if isinstance(other, Tensor):
             return self.val == other.val
         return self.val == other
+    
+    def __getitem__(self, i: int):
+        return Tensor(self.val[i], backlink=Tensor.Backlink(i, self))
