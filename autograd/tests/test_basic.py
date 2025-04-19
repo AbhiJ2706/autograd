@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from autograd.functional import exp, sum_along_axis_0
-from autograd.tensor import Tensor
+from mytorch.functional import exp, sum_along_axis_0
+from mytorch.tensor import Tensor
 
 
 def test_add():

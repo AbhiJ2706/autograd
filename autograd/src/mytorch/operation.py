@@ -4,7 +4,7 @@ import abc
 
 import numpy as np
 
-import autograd.tensor as tensor
+import mytorch.tensor as tensor
 
 
 class BaseOperation(abc.ABC):

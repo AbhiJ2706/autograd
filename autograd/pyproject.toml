@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "autograd"
+name = "mytorch"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
@@ -34,7 +34,7 @@ Issues = "https://github.com/unknown/autograd/issues"
 Source = "https://github.com/unknown/autograd"
 
 [tool.hatch.version]
-path = "src/autograd/__about__.py"
+path = "src/mytorch/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -61,19 +61,19 @@ dependencies = [
   "mypy>=1.0.0",
 ]
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/autograd tests}"
+check = "mypy --install-types --non-interactive {args:src/mytorch tests}"
 
 [tool.coverage.run]
-source_pkgs = ["autograd", "tests"]
+source_pkgs = ["mytorch", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/autograd/__about__.py",
+  "src/mytorch/__about__.py",
 ]
 
 [tool.coverage.paths]
-autograd = ["src/autograd", "*/autograd/src/autograd"]
-tests = ["tests", "*/autograd/tests"]
+autograd = ["src/mytorch", "*/mytorch/src/mytorch"]
+tests = ["tests", "*/mytorch/tests"]
 
 [tool.coverage.report]
 exclude_lines = [

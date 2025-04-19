@@ -1,5 +1,5 @@
-from autograd.tensor import Tensor
-from autograd.operation import *
+from mytorch.tensor import Tensor
+from mytorch.operation import *
 
 
 def exp(x: Tensor | float | int) -> Tensor | float | int:

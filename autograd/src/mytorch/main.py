@@ -1,6 +1,6 @@
 import numpy as np
-from autograd.tensor import Tensor
-import autograd.functional as F
+from mytorch.tensor import Tensor
+import mytorch.functional as F
 
 
 if __name__ == "__main__":

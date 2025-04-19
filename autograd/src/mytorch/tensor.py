@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-import autograd.operation as operation
+import mytorch.operation as operation
 
 
 class Tensor:
