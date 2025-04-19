@@ -12,17 +12,32 @@ class Tensor:
             self.referee = referee
 
         def send(self, grad: np.ndarray):
-            referee_grad = np.zeros_like(self.referee.val, dtype=float)
-            referee_grad[self.indexer] = grad[self.indexer]
-            self.referee.backward(referee_grad)
+            try:
+                referee_grad = np.zeros_like(self.referee.val, dtype=float)
+                referee_grad[self.indexer] = grad.reshape(referee_grad[self.indexer].shape)
+                self.referee.backward(referee_grad)
+            except ValueError as e:
+                print("Backlink --------------")
+                print(self.referee.info(verbose=True))
+                print(self.referee.creator)
+                print(grad)
+                print(self.indexer)
+                print(referee_grad)
+                print(self.indexer)
+                print(referee_grad[self.indexer])
+                print(grad[self.indexer])
+                raise e
 
     def __init__(self, val: np.ndarray | float | int | list, creator: operation.BaseOperation = None, backlink: Tensor.Backlink = None):
         if isinstance(val, np.ndarray):
-            self.val: np.ndarray = val
+            self.val: np.ndarray = val.astype(np.float32)
         elif isinstance(val, list):
-            self.val: np.ndarray = np.array(val)
+            self.val: np.ndarray = np.array(val, dtype=np.float32)
         else:
-            self.val: np.ndarray = np.array([val])
+            self.val: np.ndarray = np.array([val], dtype=np.float32)
+
+        if len(self.val.shape) == 0:
+            self.val = self.val.reshape((1,))
         self.creator: operation.BaseOperation = creator
         self.grad: np.ndarray | None = None
         self.backlink: Tensor.Backlink = backlink
@@ -36,9 +51,17 @@ class Tensor:
         if self.grad is None:
             if current_gradient is None:
                 current_gradient = np.ones_like(self.val)
-            self.grad = current_gradient
+            axis_list = self.__resolve_shape(current_gradient)
+            if len(axis_list):
+                self.grad = np.sum(current_gradient, axis=tuple(axis_list)).reshape(self.val.shape)
+            else:
+                self.grad = current_gradient
         else:
-            self.grad += current_gradient
+            axis_list = self.__resolve_shape(current_gradient)
+            if len(axis_list):
+                self.grad += np.sum(current_gradient, axis=tuple(axis_list)).reshape(self.val.shape)
+            else:
+                self.grad += current_gradient
         if self.backlink:
             self.backlink.send(self.grad)
         if self.creator:
@@ -60,6 +83,16 @@ class Tensor:
         if isinstance(self.val, np.ndarray):
             return tuple(self.val.shape)
         return (1,)
+
+    def __resolve_shape(self, grad: np.ndarray):
+        self_shape = self.val.shape
+        grad_shape = grad.shape
+        padded_self_shape = (1,) * (len(grad_shape) - len(self_shape)) + self_shape
+        axis_list = []
+        for i, (s_dim, g_dim) in enumerate(zip(padded_self_shape, grad_shape)):
+            if s_dim == 1 and g_dim != 1:
+                axis_list.append(i)
+        return axis_list
     
     def __str__(self):
         return f"Tensor({str(self.val)})"
