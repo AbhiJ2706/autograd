@@ -153,3 +153,14 @@ class NaturalLogarithm(BaseOperation):
     def info(self, verbose=False):
         return f"Ln ({self._join_args(verbose=verbose)})"
     
+
+class AbsoluteValue(BaseOperation):
+    def _forward(self):
+        return np.abs(self._get_arg(0))
+    
+    def _backward(self, i):
+        return np.where(self._get_arg(i) >= 0, 1, -1)
+    
+    def info(self, verbose=False):
+        return f"Abs ({self._join_args(verbose=verbose)})"
+    

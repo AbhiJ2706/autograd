@@ -137,3 +137,10 @@ def test_matrix_multiplication():
     (x @ y).backward()
     assert np.allclose(x.grad, [[17, 19, 21], [17, 19, 21]])
     assert np.allclose(y.grad, [[5, 5], [7, 7], [9, 9]])
+
+
+def test_abs():
+    x = Tensor([[-1, 2, -3], [4, -5, 6]])
+    assert np.all(abs(x) == [[1, 2, 3], [4, 5, 6]])
+    abs(x).backward()
+    assert np.all(x.grad == [[-1, 1, -1], [1, -1, 1]])

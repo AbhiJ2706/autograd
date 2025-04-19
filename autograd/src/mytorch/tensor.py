@@ -161,6 +161,10 @@ class Tensor:
         op = operation.MatrixMultiplication()
         return op.forward(self, other)
 
+    def __abs__(self):
+        op = operation.AbsoluteValue()
+        return op.forward(self)
+
     def __neg__(self) -> Tensor:
         op = operation.Multiply()
         return op.forward(self, -1)
