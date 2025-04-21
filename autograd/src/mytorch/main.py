@@ -154,3 +154,23 @@ if __name__ == "__main__":
     z.backward()
     print(z.info())
     print(x.grad)
+
+    print("-------------")
+
+    x = Tensor([1, 2, 3, 4, 5, 6, 7, 8])
+    y = Tensor([1, 2, 3])
+    print(F.conv1d(x, y))
+    z = F.conv1d(x, y)
+    print(z.info())
+    z.backward()
+    print(y.grad)
+    print(x.grad)
+
+    print("-------------")
+
+    x = Tensor([[0.1, 0.3, 0.6], [0.9, 0.07, 0.03], [0.33, 0.33, 0.34]])
+    y = Tensor([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    print(F.cross_entropy(x, y))
+    z = F.cross_entropy(x, y)
+    z.backward()
+    print(x.grad)

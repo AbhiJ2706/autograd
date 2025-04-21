@@ -27,7 +27,8 @@ class BaseOperation(abc.ABC):
     
     def zero_grad(self):
         for arg in self.args:
-            arg.zero_grad()
+            if isinstance(arg, tensor.Tensor):
+                arg.zero_grad()
     
     @abc.abstractmethod
     def info(self):
@@ -140,7 +141,22 @@ class MatrixMultiplication(BaseOperation):
         pass
     
     def info(self, verbose=False):
-        return f"Exponent ({self._join_args(verbose=verbose)})"
+        return f"Matrix multiplication ({self._join_args(verbose=verbose)})"
+    
+
+class DotProduct(BaseOperation):
+    def _forward(self):
+        return self.args[0].val @ self.args[1].val
+    
+    def backward(self, current_gradient: np.ndarray):
+        self.args[0].backward(current_gradient @ self.args[1].val.reshape(1, -1))
+        self.args[1].backward(self.args[0].val.reshape(-1, 1) @ current_gradient)
+    
+    def _backward(self):
+        pass
+    
+    def info(self, verbose=False):
+        return f"Dot Product ({self._join_args(verbose=verbose)})"
     
 
 class NaturalLogarithm(BaseOperation):

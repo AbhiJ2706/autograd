@@ -41,3 +41,27 @@ def mean_squared_error(x: Tensor, y: Tensor) -> Tensor:
 def cross_entropy(x: Tensor, y: Tensor) -> Tensor:
     op = NaturalLogarithm()
     return -sum_along_axis_0(y * op.forward(x))
+
+def conv1d(x: Tensor, y: Tensor, padding: int = 0, stride: int = 1) -> Tensor:
+    class Conv1d(BaseOperation):
+        def _forward(self):
+            f = self._get_arg(0)
+            k = self._get_arg(1)
+            return np.convolve(f, np.flip(k), mode='valid')
+        
+        def backward(self, current_gradient: np.ndarray):
+            k = self._get_arg(1)
+            f = self._get_arg(0)
+
+            self.args[0].backward(np.convolve(current_gradient, k, mode='full'))
+            self.args[1].backward(np.convolve(f, current_gradient, mode='valid'))
+    
+        def _backward(self, i):
+            pass
+        
+        def info(self, verbose=False):
+            return f"Conv1d ({self._join_args(verbose=verbose)})"
+    
+    op = Conv1d()
+    return op.forward(x, y)
+

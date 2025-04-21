@@ -17,7 +17,7 @@ class Tensor:
                 referee_grad[self.indexer] = grad.reshape(referee_grad[self.indexer].shape)
                 self.referee.backward(referee_grad)
             except ValueError as e:
-                print("Backlink --------------")
+                print("Backlink Error--------------")
                 print(self.referee.info(verbose=True))
                 print(self.referee.creator)
                 print(grad)
@@ -44,8 +44,10 @@ class Tensor:
     
     def zero_grad(self) -> None:
         self.grad = None
+        self.backlink = None
         if self.creator:
             self.creator.zero_grad()
+            self.creator = None
 
     def backward(self, current_gradient: np.ndarray | None = None) -> None:
         if self.grad is None:
