@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from mytorch.operation import DotProduct
+from mytorch.optimizer import Optimizer
 from mytorch.tensor import Tensor
 import mytorch.functional as F
 
@@ -16,19 +17,16 @@ class LogisticRegressor:
         self.b = Tensor(0)
     
     def fit(self, X_train, y_train, t=100, lr=0.01):
-        for _ in tqdm(range(t)):
-            W_grad = np.zeros_like(self.W.val)
-            b_grad = np.zeros_like(self.b.val)
-            for ex, ey in zip(X_train, y_train):
-                op = DotProduct()
-                pred = F.sigmoid(op.forward(self.W, ex) + self.b)
-                loss = F.cross_entropy(pred, ey)
-                loss.backward()
-                W_grad += lr * self.W.grad
-                b_grad += lr * self.b.grad.reshape((1,))
-                loss.zero_grad()
-            self.W -= W_grad / 100
-            self.b -= b_grad / 100
+        with Optimizer(self.W, self.b, lr=lr) as optim:
+            for _ in tqdm(range(t)):
+                (self.W, self.b) = optim.zero_grad()
+                for ex, ey in zip(X_train, y_train):
+                    op = DotProduct()
+                    pred = F.sigmoid(op.forward(self.W, ex) + self.b)
+                    loss = F.cross_entropy(pred, ey)
+                    loss.backward()
+                    optim.step()
+                    loss.zero_grad()
     
     def predict(self, X_test):
         preds = []
