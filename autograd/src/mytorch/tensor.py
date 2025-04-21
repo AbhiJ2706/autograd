@@ -42,12 +42,15 @@ class Tensor:
         self.grad: np.ndarray | None = None
         self.backlink: Tensor.Backlink = backlink
     
-    def zero_grad(self) -> None:
+    def clean(self):
         self.grad = None
         self.backlink = None
+        self.creator = None
+    
+    def zero_grad(self) -> None:
         if self.creator:
             self.creator.zero_grad()
-            self.creator = None
+        self.clean()
 
     def backward(self, current_gradient: np.ndarray | None = None) -> None:
         if self.grad is None:
@@ -160,7 +163,10 @@ class Tensor:
         return op.forward(other, self)
     
     def __matmul__(self, other: Tensor):
-        op = operation.MatrixMultiplication()
+        if len(self.shape) == 1 and len(other.shape) == 1:
+            op = operation.DotProduct()
+        else:
+            op = operation.MatrixMultiplication()
         return op.forward(self, other)
 
     def __abs__(self):
