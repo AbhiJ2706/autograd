@@ -134,8 +134,14 @@ class MatrixMultiplication(BaseOperation):
         return self.args[0].val @ self.args[1].val
     
     def backward(self, current_gradient: np.ndarray):
-        self.args[0].backward(current_gradient @ self.args[1].val.T)
-        self.args[1].backward(self.args[0].val.T @ current_gradient)
+        try:
+            self.args[0].backward(current_gradient @ self.args[1].val.T)
+        except ValueError as e:
+            self.args[0].backward(current_gradient.reshape(-1, 1) @ self.args[1].val.T.reshape(1, -1))
+        try:
+            self.args[1].backward(self.args[0].val.T @ current_gradient)
+        except ValueError:
+            self.args[1].backward(np.sum(self.args[0].val.T.reshape(-1, 1) @ current_gradient.reshape(1, -1), axis=1))
     
     def _backward(self):
         pass

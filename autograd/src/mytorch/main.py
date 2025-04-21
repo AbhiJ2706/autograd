@@ -140,6 +140,7 @@ if __name__ == "__main__":
 
     x = Tensor([[1, 2, 3], [4, 5, 6]])
     y = Tensor([[7, 8, 9], [10, 11, 12]])
+    print(x, y)
     print(F.mean_squared_error(x, y))
     z = F.mean_squared_error(x, y)
     z.backward()

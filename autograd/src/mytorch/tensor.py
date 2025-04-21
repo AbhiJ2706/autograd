@@ -12,23 +12,19 @@ class Tensor:
             self.referee = referee
 
         def send(self, grad: np.ndarray):
-            try:
-                referee_grad = np.zeros_like(self.referee.val, dtype=float)
-                referee_grad[self.indexer] = grad.reshape(referee_grad[self.indexer].shape)
-                self.referee.backward(referee_grad)
-            except ValueError as e:
-                print("Backlink Error--------------")
-                print(self.referee.info(verbose=True))
-                print(self.referee.creator)
-                print(grad)
-                print(self.indexer)
-                print(referee_grad)
-                print(self.indexer)
-                print(referee_grad[self.indexer])
-                print(grad[self.indexer])
-                raise e
+            referee_grad = np.zeros_like(self.referee.val, dtype=float)
+            referee_grad[self.indexer] = grad.reshape(referee_grad[self.indexer].shape)
+            self.referee.backward(referee_grad)
+        
+        def __str__(self):
+            return f"Backlink ({self.indexer} referee=@{hex(id(self.referee))})"
 
-    def __init__(self, val: np.ndarray | float | int | list, creator: operation.BaseOperation = None, backlink: Tensor.Backlink = None):
+    def __init__(
+        self, 
+        val: np.ndarray | float | int | list, 
+        creator: operation.BaseOperation = None, 
+        backlink: Tensor.Backlink = None
+    ):
         if isinstance(val, np.ndarray):
             self.val: np.ndarray = val.astype(np.float32)
         elif isinstance(val, list):
@@ -80,7 +76,7 @@ class Tensor:
             return self.creator.info(verbose=verbose)
         else:
             if verbose:
-                return f"Tensor({str(self.val)} grad={self.grad})"
+                return f"Tensor @{hex(id(self))} ({str(self.val)} grad={self.grad} backlink={self.backlink})"
             return str(self)
 
     @property
@@ -100,7 +96,7 @@ class Tensor:
         return axis_list
     
     def __str__(self):
-        return f"Tensor({str(self.val)})"
+        return f"Tensor @{hex(id(self))} ({str(self.val)})"
     
     def __add__(self, other: Tensor | float | int) -> Tensor:
         op = operation.Add()
@@ -162,14 +158,14 @@ class Tensor:
         op = operation.Exponent()
         return op.forward(other, self)
     
-    def __matmul__(self, other: Tensor):
+    def __matmul__(self, other: Tensor) -> Tensor:
         if len(self.shape) == 1 and len(other.shape) == 1:
             op = operation.DotProduct()
         else:
             op = operation.MatrixMultiplication()
         return op.forward(self, other)
 
-    def __abs__(self):
+    def __abs__(self) -> Tensor:
         op = operation.AbsoluteValue()
         return op.forward(self)
 
@@ -207,5 +203,5 @@ class Tensor:
             return self.val == other.val
         return self.val == other
     
-    def __getitem__(self, i: int):
+    def __getitem__(self, i: int) -> Tensor:
         return Tensor(self.val[i], backlink=Tensor.Backlink(i, self))

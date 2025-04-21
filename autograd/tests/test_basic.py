@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from mytorch.functional import exp, sum_along_axis_0
-from mytorch.operation import DotProduct
+from mytorch.operation import DotProduct, MatrixMultiplication
 from mytorch.tensor import Tensor
 
 
@@ -145,6 +145,30 @@ def test_matrix_multiplication():
     z = x @ y
     z.backward()
     assert isinstance(z.creator, DotProduct)
+
+    x = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    y = Tensor([4, 5, 6])
+    assert np.all(x @ y == 32)
+    assert (x @ y).shape == (3,)
+    z = x @ y
+    z.backward()
+    assert isinstance(z.creator, MatrixMultiplication)
+    z.zero_grad()
+
+    a = y @ x
+    assert a.shape == (3,)
+    a.backward()
+    assert isinstance(a.creator, MatrixMultiplication)
+
+    x = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    y = Tensor([4, 5, 6])
+    assert np.all(x @ y == 32)
+    assert (x @ y).shape == (4,)
+    z = x @ y
+    z.backward()
+    assert isinstance(z.creator, MatrixMultiplication)
+    print(x.grad, y.grad)
+    z.zero_grad()
 
 
 def test_abs():
