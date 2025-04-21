@@ -20,10 +20,8 @@ class DefaultOptimizer:
             self.arg_grads[i] += self.lr * arg.grad
     
     def zero_grad(self):
-        if not self.update_counter: return self.args
+        if not self.update_counter: return
         for i, update in enumerate(self.arg_grads):
-            self.args[i] -= update / self.update_counter
-            self.args[i].clean()
+            self.args[i].direct_update(self.args[i] - update / self.update_counter)
         self.arg_grads = [np.zeros_like(a.val) for a in self.args]
         self.update_counter = 0
-        return self.args

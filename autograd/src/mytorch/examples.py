@@ -5,7 +5,7 @@ from sklearn.discriminant_analysis import StandardScaler
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
-from mytorch.nn import Dense
+from mytorch.nn import Dense, Sigmoid, Softmax
 from mytorch.optimizer import DefaultOptimizer
 from mytorch.tensor import Tensor
 import mytorch.functional as F
@@ -19,7 +19,7 @@ class LogisticRegressor:
     def fit(self, X_train, y_train, t=100, lr=0.01):
         with DefaultOptimizer(self.W, self.b, lr=lr) as optim:
             for _ in tqdm(range(t)):
-                (self.W, self.b) = optim.zero_grad()
+                optim.zero_grad()
                 for ex, ey in zip(X_train, y_train):
                     pred = F.sigmoid(self.W @ ex + self.b)
                     loss = F.cross_entropy(pred, ey)
@@ -38,25 +38,29 @@ class LogisticRegressor:
 class SimpleANN:
     def __init__(self):
         self.l1 = Dense(4, 5)
+        self.a1 = Sigmoid()
         self.l2 = Dense(5, 3)
+        self.a2 = Softmax()
     
+    def forward(self, x):
+        x = self.a1(self.l1(x))
+        x = self.a2(self.l2(x))
+        return x
+
     def fit(self, X_train, y_train, t=100, lr=0.01):
-        with DefaultOptimizer(self.l1.W, self.l1.b, self.l2.W, self.l2.b, lr=lr) as optim:
+        with DefaultOptimizer(*self.l1.parameters(), *self.l2.parameters(), lr=lr) as optim:
             for _ in tqdm(range(t)):
-                (self.l1.W, self.l1.b, self.l2.W, self.l2.b) = optim.zero_grad()
+                optim.zero_grad()
                 for ex, ey in zip(X_train, y_train):
-                    x = F.sigmoid(self.l1.forward(ex))
-                    x = F.softmax(self.l2.forward(x))
-                    loss = F.cross_entropy(x, ey)
+                    pred = self.forward(ex)
+                    loss = F.cross_entropy(pred, ey)
                     loss.backward()
                     optim.step()
-                    loss.zero_grad()
     
     def predict(self, X_test):
         preds = []
         for ex in X_test:
-            x = F.sigmoid(self.l1.forward(ex))
-            x = F.softmax(self.l2.forward(x))
+            x = self.forward(ex)
             preds.append(np.argmax(x.val))
         return np.array(preds)
 

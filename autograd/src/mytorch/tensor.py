@@ -38,15 +38,10 @@ class Tensor:
         self.grad: np.ndarray | None = None
         self.backlink: Tensor.Backlink = backlink
     
-    def clean(self):
-        self.grad = None
-        self.backlink = None
-        self.creator = None
-    
     def zero_grad(self) -> None:
         if self.creator:
             self.creator.zero_grad()
-        self.clean()
+        self.__clean()
 
     def backward(self, current_gradient: np.ndarray | None = None) -> None:
         if self.grad is None:
@@ -94,6 +89,15 @@ class Tensor:
             if s_dim == 1 and g_dim != 1:
                 axis_list.append(i)
         return axis_list
+
+    def direct_update(self, new: Tensor):
+        self.__clean()
+        self.val = new.val
+
+    def __clean(self):
+        self.grad = None
+        self.backlink = None
+        self.creator = None
     
     def __str__(self):
         return f"Tensor @{hex(id(self))} ({str(self.val)})"

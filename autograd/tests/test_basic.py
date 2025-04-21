@@ -167,8 +167,8 @@ def test_matrix_multiplication():
     z = x @ y
     z.backward()
     assert isinstance(z.creator, MatrixMultiplication)
-    print(x.grad, y.grad)
-    z.zero_grad()
+    assert np.all(x.grad == [[4, 5, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]])
+    assert np.all(y.grad == [4, 8, 12])
 
 
 def test_abs():
